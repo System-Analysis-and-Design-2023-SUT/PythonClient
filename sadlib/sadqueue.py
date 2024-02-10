@@ -49,10 +49,9 @@ def pull():
     response = requests.get(f"{host}/pull")
     if response.status_code == 200:
         data = response.json()
-        print(f"Pulled message: {data['value']}")
-        return True
-    print("Failed to pull a message.")
-    return False
+        return data['value']
+
+    raise Exception("Failed to pull from sadqueue server")
 
 
 def subscribe(func):

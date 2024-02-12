@@ -1,3 +1,6 @@
+import json
+import random
+
 import requests
 import uuid
 import threading
@@ -12,8 +15,8 @@ def check_host(host):
     try:
         response = requests.get(f"{host}/-/ready", timeout=5)
         return response.status_code == 200
-    except Exception as e:
-        raise Exception(f"An error occurred while checking the readiness of {host}:\n{e}")
+    except Exception:
+        return False
 
 
 def find_live_host():
@@ -23,10 +26,8 @@ def find_live_host():
 
 
 def get_live_host():
-    if check_host(live_host):
-        return live_host
-    else:
-        return find_live_host()
+    random.shuffle(HOSTS)
+    return find_live_host()
 
 
 def push(message):
@@ -60,9 +61,15 @@ def subscribe(func):
         raise Exception("No available sadqueue host found")
 
     def on_message(ws, message):
-        func(message)
+        if message == "You subscribe successfully":
+            pass
+        else:
+            func(message)
+
+    def on_open(ws):
+        ws.send("subscribe\n")  # Send initial message upon opening the connection
 
     ws_url = host.replace("http", "ws") + "/subscribe"
-    ws = websocket.WebSocketApp(ws_url, on_message=on_message)
+    ws = websocket.WebSocketApp(ws_url, on_message=on_message, on_open=on_open)
     thread = threading.Thread(target=lambda: ws.run_forever(), daemon=True)
     thread.start()

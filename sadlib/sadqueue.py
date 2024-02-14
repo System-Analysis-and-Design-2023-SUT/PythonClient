@@ -26,16 +26,18 @@ def find_live_host():
 
 
 def get_live_host():
-    random.shuffle(HOSTS)
-    return find_live_host()
+    global live_host
+    if not check_host(live_host):
+        live_host = find_live_host()
+    return live_host
 
 
-def push(message):
+def push(key, message):
     host = get_live_host()
     if host is None:
         raise Exception("No available sadqueue host found")
 
-    key = str(uuid.uuid4())
+    # key = str(uuid.uuid4())
     params = urllib.parse.urlencode({'key': key, 'value': message})
     response = requests.post(f"{host}/push?{params}")
     if response.status_code != 200:
@@ -50,8 +52,7 @@ def pull():
     response = requests.get(f"{host}/pull")
     if response.status_code == 200:
         data = response.json()
-        return data['value']
-
+        return data['key'], data['value']
     raise Exception("Failed to pull from sadqueue server")
 
 
@@ -64,7 +65,8 @@ def subscribe(func):
         if message == "You subscribe successfully":
             pass
         else:
-            func(message)
+            data = json.loads(message)
+            func(data['key'], data['value'])
 
     def on_open(ws):
         ws.send("subscribe\n")  # Send initial message upon opening the connection

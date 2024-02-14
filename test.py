@@ -1,3 +1,4 @@
+import random
 import time
 from collections import defaultdict
 from sadlib.sadqueue import push, pull, subscribe
@@ -5,25 +6,25 @@ from sadlib.sadqueue import push, pull, subscribe
 arrived_messages_dict = defaultdict(list)
 
 
-def f1(msg):
+def f1(key, msg):
     print("F1 received a message", msg)
     global arrived_messages_dict
     arrived_messages_dict['f1'].append(msg)
 
 
-def f2(msg):
+def f2(key, msg):
     print("F2 received a message", msg)
     global arrived_messages_dict
     arrived_messages_dict['f2'].append(msg)
 
 
-def f3(msg):
+def f3(key, msg):
     print("F3 received a message", msg)
     global arrived_messages_dict
     arrived_messages_dict['f3'].append(msg)
 
 
-def simple_print(msg):
+def simple_print(key, msg):
     print(f"a message arrived in simple_print: {msg}")
 
 
@@ -34,7 +35,7 @@ def test_push_pull():
         try:
             message = f"message-{counter}"
             print(f"pushing {message}")
-            push(message)
+            push(message, message)
             counter += 1
         except Exception as e:
             print(f"Error: {e}")
@@ -46,7 +47,7 @@ def test_push_pull():
         try:
             message = f"message-{counter}"
             print(f"pulling to see: {message}")
-            response = pull()
+            _, response = pull()
             assert response == message
             print("correct!")
             counter += 1
@@ -65,7 +66,7 @@ def test_subscribe():
     messages_length = 15
 
     for msg in range(1, messages_length + 1):
-        push(f"sbs-{msg}")
+        push(f"sbs-{msg}", f"sbs-{msg}")
     time.sleep(5)
 
     print("pushing completed. start checking if subscriptions worked...")
@@ -94,7 +95,7 @@ while True:
     if opt == "2":
         test_subscribe()
     if opt == "3":
-        push(input("message to push: "))
+        push(random.randint(1000, 9999), input("message to push: "))
     if opt == "4":
         try:
             print(pull())

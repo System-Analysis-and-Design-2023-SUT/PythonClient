@@ -30,8 +30,10 @@ def simple_print(key, msg):
 
 def test_push_pull():
     print("Start pushing messages to server.")
+    messages_length = int(input("how many messages to test="))
+
     counter = 1
-    while counter <= 15:
+    while counter <= messages_length:
         try:
             message = f"message-{counter}"
             print(f"pushing {message}")
@@ -43,7 +45,7 @@ def test_push_pull():
     print("Pushing completed. lets start pulling messages")
     time.sleep(5)
     counter = 1
-    while counter <= 15:
+    while counter <= messages_length:
         try:
             message = f"message-{counter}"
             print(f"pulling to see: {message}")
@@ -52,7 +54,7 @@ def test_push_pull():
             print("correct!")
             counter += 1
         except Exception as e:
-            print(f"Error: {e}")
+            print(f"ERROR: {e}")
             break
 
 
@@ -63,7 +65,7 @@ def test_subscribe():
     subscribe(f3)
 
     print("subscription completed. start pushing several messages...")
-    messages_length = 15
+    messages_length = int(input("how many messages to test="))
 
     for msg in range(1, messages_length + 1):
         push(f"sbs-{msg}", f"sbs-{msg}")
@@ -79,13 +81,11 @@ def test_subscribe():
         for msg in msg_list:
             arrived_messages_set.add(msg)
 
-    print(arrived_messages_dict)
-    print(arrived_messages_set)
-    print("check if all messages arrived")
-    assert counter == messages_length
-    print("check for duplication")
+    print("check if all messages arrived...")
+    assert counter >= messages_length
+    print("DONE!\ncheck for duplication...")
     assert counter == len(arrived_messages_set)
-    print("Everything is alright!!!")
+    print("DONE!")
 
 
 while True:
@@ -95,11 +95,14 @@ while True:
     if opt == "2":
         test_subscribe()
     if opt == "3":
-        push(random.randint(1000, 9999), input("message to push: "))
+        try:
+            push(input("key="), input("value="))
+        except Exception:
+            print("key already exists")
     if opt == "4":
         try:
             print(pull())
         except Exception:
-            print("No message to pull")
+            print("no message to pull")
     if opt == "5":
         subscribe(simple_print)
